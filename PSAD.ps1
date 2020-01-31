@@ -8,9 +8,14 @@ Get-ADGroupMember -Identity ADGROUP | select name,SamAccountname | Format-Table 
 #check if the user USER is in the ADGroup
 Get-ADGroupMember ADGROUP | Where-Object {$_.name -match "USER*"} |select name,SamAccountname | Format-Table -AutoSize
 
-#add a AD user to an AD group
+#add an AD user to an AD group using a wildcard if you are lazy to check the AD
 $ad = Get-ADUser -f {name -like "USER*"}
 Add-ADGroupMember -Identity ADGROUP -Members $ad.SamAccountName
+
+#add an AD user to an AD group knowing the SamAccountName 
+$ad = Get-ADUser USER
+Add-ADGroupMember -Identity ADGROUP -Members $ad.SamAccountName
+Get-ADGroupMember ADGROUP | Where-Object {$_.SamAccountname -match "USER"} |select name,SamAccountname | Format-Table -AutoSize 
 
 #check properties of an AD Group
 Get-ADGroup ADGROUP
