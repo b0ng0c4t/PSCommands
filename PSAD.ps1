@@ -5,6 +5,9 @@ Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
 #Check users of an AD group, sorted and selected by name and SamAccount
 Get-ADGroupMember -Identity ADGROUP | select name,SamAccountname | Format-Table -AutoSize
 
+#check if the user USER is in the ADGroup
+Get-ADGroupMember ADGROUP | Where-Object {$_.name -match "USER*"} |select name,SamAccountname | Format-Table -AutoSize
+
 #add a AD user to an AD group
 $ad = Get-ADUser -f {name -like "USER*"}
 Add-ADGroupMember -Identity ADGROUP -Members $ad.SamAccountName
