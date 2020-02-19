@@ -48,3 +48,11 @@ enable-ADAccount $ad.SamAccountName
 
 #find empty AD groups
 Get-ADGroup -Filter * | where {-not ($_ | Get-ADGroupMember)} | select name
+
+#add a group of users to a DL, first converting email to SAMAccountName and 
+#after then adding it with the variable
+$usersToDL = Get-Content 'C:\PATH' | Foreach-Object {
+    Get-ADUser -Filter "mail -eq '$_'" | Select-Object -ExpandProperty SamAccountName 
+} 
+
+Add-ADGroupMember -Identity "#DL_NAME" -Members $usersToDL
