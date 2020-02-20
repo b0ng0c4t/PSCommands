@@ -109,3 +109,7 @@ Get-MailBoxFolderPermission -Identity "mail@example.com:\Calendar" | Select Fold
 
 #--- Add user to a calendar with permissions
 Add-MailboxFolderPermission -identity USER@EXAMPLE.COM:\calendar -AccessRights EDITOR -User USER@EXAMPLE.COM
+
+
+#--- remove all rules of a mailbox
+Get-InboxRule -Mailbox MAILBOX | Remove-InboxRule -Force -Confirm:$false
