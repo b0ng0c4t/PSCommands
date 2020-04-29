@@ -113,3 +113,21 @@ Add-MailboxFolderPermission -identity USER@EXAMPLE.COM:\calendar -AccessRights E
 
 #--- remove all rules of a mailbox
 Get-InboxRule -Mailbox MAILBOX | Remove-InboxRule -Force -Confirm:$false
+
+#-- Rules in shared mailboxes, admin must be added ass full access to can create it
+$User = 'USER'
+$MBX = 'SHARED MAILBOX'
+Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
+New-InboxRule "NAME NEW RULE" -Mailbox $MBX -From EMAIL@DOMAIN.COM -subjectContainsWords "SOME SUBJECT WORD"  -MoveToFolder 'EMAIL@DOMAIN.COM:\Inbox\SUBFOLDER\DESTINATION FOLDER' -StopProcessingRules $false
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
+Get-InboxRule -Mailbox $MBX
+
+
+
+#-- Rename AD group
+Set-ADGroup -Identity "AD GROUP NAME" -DisplayName "NEW DISPLAY NAME"
+
+
+
+#-- Get the emails of the users in a AD Group
+Get-ADGroupMember -Identity "AD GROUP" -Recursive | Get-ADUser -Properties Mail | Select-Object Mail
