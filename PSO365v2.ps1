@@ -1,133 +1,166 @@
-#This is the script that I’m using to find object in AD by email-address ie. shared@example.com
-$M = 'shared@example.com'
-Get-ADObject -Properties mail, proxyAddresses -Filter {mail -eq $M -or proxyAddresses -eq $M}  
 
+$profile #to know where is the profile
 
-
-#---Check the mailbox
-$M_List = @(
-#"Some.Mailbox@example.com ",
-)
-foreach ($M in $M_List) 
-{
-Get-Mailbox $M | select Identity, DisplayName, UserPrincipalName, ResourceType, RecipientTypeDetails, ProhibitSendQuota, PrimarySmtpAddress ,SKUAssigned, HiddenFromAddressListsEnabled, ForwardingAddress, ForwardingSmtpAddress
-} 
-
-
-
-#Check commands available from a module
-get-module -name MODULE -ListAvailable | % {$_.ExportedCommands.Values}
-
-
+$MBX = Get-Content .\mailboxes.txt
+$User = Get-Content .\users.txt
+$ADGroup = Get-Content .\ad_groups.txt
+$GP = Get-Content .\ad_groups.txt
+$email = @("email1@email.com","email2@email.com")
 
 #---Add user to a MBX
-$User = 'user@example.com'
-$MBX = 'mail@example.com'
 Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
 Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $User -confirm:$False
 
 
-
 #---remove user of a MBX
-$User = 'sample.user@example.com'
-$MBX = 'sample.shared@example.com'
 Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
 Remove-MailboxPermission -Identity $MBX -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
-Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $user
-
+Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $User
 
 
 #---Add Multiple users to multiple MBX, you have to create the .txt files in the same folder
-$MBX = Get-Content .\mailboxes.txt
-$USR_list = Get-Content .\users.txt
 
-foreach ($User in $USR_list) {
+foreach ($User in $USR) {
 # Add with no automapping 
 Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $False -Confirm:$False
 Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $User -confirm:$False
 }
 
 
-
 #---Remove Multiple users of multiple MBX
-$MBX = Get-Content .\mailboxes.txt
-$USR_list = Get-Content .\users.txt
-
-foreach ($User in $USR_list) {
-Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
-Remove-MailboxPermission -Identity $MBX -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
-Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $user
+foreach ($USR in $User) {
+Remove-MailboxPermission -Identity $MBX -User $USR -AccessRights FullAccess -InheritanceType All -confirm:$False
+Remove-MailboxPermission -Identity $MBX -User $USR -AccessRights SendAs -InheritanceType All -confirm:$False
+Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $USR
 }
-
 
 
 #---Add user to multiple MBX
-$User = 'user@example.com'
-$MBX_list = get-content .\mailboxes.txt
-
-foreach ($MBX in $MBX_list) {
+foreach ($mbox in $MBX) {
 # Add with automapping 
-Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
-Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $User -confirm:$False
+Add-MailboxPermission -Identity $mbox -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
+Add-RecipientPermission $mbox -AccessRights SendAs -Trustee $User -confirm:$False
 }
-
 
 
 #---Remove User of multiple MBX
-$User = 'sample.user@example.com'
-$MBX_list = get-content .\mailboxes.txt
-
-foreach ($MBX in $MBX_list) {
-Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
-Remove-MailboxPermission -Identity $MBX -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
-Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $user
+foreach ($mbox in $MBX) {
+Remove-MailboxPermission -Identity $mbox -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
+Remove-MailboxPermission -Identity $mbox -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
+Remove-RecipientPermission $mbox -AccessRights SendAs -Trustee $user -confirm:$False
 }
-
 
 
 #---Add Multiple users to MBX
-$MBX = "mail@example.com"
-$USR_list = Get-Content .\users.txt
-
-foreach ($User in $USR_list) {
+foreach ($User in $USR) {
 # Add with yes/no automapping 
-Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $False -Confirm:$True
-Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $User -confirm:$False
+Add-MailboxPermission -Identity $MBX -User $USR -AccessRights FullAccess -AutoMapping $True -Confirm:$False
+Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $USR -confirm:$False
 }
 
 
+#---Remove Multiple users to MBX
+foreach ($User in $USR) {
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
+Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $user -confirm:$False
+}
+
+
+#---Re-Add user to a MBX
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights SendAs -InheritanceType All -confirm:$False
+Remove-RecipientPermission $MBX -AccessRights SendAs -Trustee $user
+Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
+Add-RecipientPermission $MBX -AccessRights SendAs -Trustee $User -confirm:$False
+
+
+#-- Limit permissions in a shared mailbox
+Add-MailboxPermission -Identity email1@email.com -User email1@email.com -AccessRights FullAccess
+Add-RecipientPermission email1@email.com -AccessRights SendAs -Trustee email1@email.com -confirm:$False
+
 
 #--- list users in a MBX
-Get-Mailbox Kundservice@techdata.nu -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Identity,User,AccessRights | Where-Object {($_.user -like '*@*')}
+Get-Mailbox $MBX -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Identity,User,AccessRights | Where-Object {($_.user -like '*@*')}
+Get-Mailbox $MBX | Get-MailboxPermission | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | select Identity,User,AccessRights
 
+#-- Get the emails of the users in a AD Group
+Get-ADGroupMember -Identity $ADGroup -Recursive | Get-ADUser -Properties Mail |Select-Object Mail,Name
+
+
+#-- Get emails of the users in a shared mailbox
+Get-Mailbox $MBX -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Identity,User,AccessRights | Where-Object {($_.user -like '*@*')}
 
 
 #--- Check room permissions for users
-Get-MailBoxFolderPermission -Identity "mail@example.com:\Calendar" | Select FolderName,User,AccessRights | Format-Table -AutoSize
+Get-MailBoxFolderPermission -Identity "MAIL@EXAMPLE.COM:\Calendar" | Select FolderName,User,AccessRights | Format-Table -AutoSize
 
+
+#--- Add user to a calendar with permissions
+Add-MailboxFolderPermission -identity MAIL@EXAMPLE.COM:\calendar -AccessRights EDITOR -User USER@EXAMPLE.COM
+
+
+#-- Show the folder tree that have the shared mailboxes
+Get-MailboxFolderStatistics -Identity $MBX -FolderScope Inbox | select Name,FolderPath 
+
+
+#-- remove inbox rule
+Remove-InboxRule -Mailbox $MBX -Identity 'RULE NAME'
+
+
+#disable inbox rule
+Disable-InboxRule -Identity "RULE NAME" -mailbox shared@domain.com
+
+
+#-- Create inbox rules
+Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
+New-InboxRule "RULE NAME" -Mailbox $MBX -From MAIL@EXAMPLE.COM  -MoveToFolder 'MAIL@EXAMPLE.COM:\Inbox\FOLDER\SUBFOLDER' -StopProcessingRules $false
+New-InboxRule "RULE NAME" -Mailbox $MBX -From email1@email.com -subjectContainsWords "MATCHED WORDS"  -MoveToFolder 'MAIL@EXAMPLE.COM:\Inbox\FOLDER\SUBFOLDER' -StopProcessingRules $false
+Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
+Get-InboxRule -Mailbox $MBX
+
+
+#-- Set an out off office message
+Set-MailboxAutoReplyConfiguration -Identity USER@EXAMPLE.COM -AutoReplyState Enabled -InternalMessage "MESSAGE"
+
+
+#Check commands available from a module
+get-module -name MODULE -ListAvailable | % {$_.ExportedCommands.Values}
+
+Get-InboxRule -mailbox $MBX
+Get-InboxRule -Mailbox $MBX -Identity 1302653358921744385 | fl description
+disable-InboxRule -Mailbox $MBX -Identity 7512399066404225025 | fl description 
+Remove-InboxRule -Mailbox $MBX -Identity 15527508064574898177
+
+#check licenses
+Connect-MsolService
+Get-MsolUser -UserPrincipalName EMAIL | Format-List DisplayName,Licenses
+(Get-MsolUser -UserPrincipalName EMAIL).Licenses.ServiceStatus
+
+#--- Check room permissions for users
+Get-MailBoxFolderPermission -Identity "mail@example.com:\Calendar" | Select FolderName, User, AccessRights | Format-Table -AutoSize
 
 
 #--- Add user to a calendar with permissions
 Add-MailboxFolderPermission -identity USER@EXAMPLE.COM:\calendar -AccessRights EDITOR -User USER@EXAMPLE.COM
 
+#--- Get commands of a module
+Get-Command -Module tmp_xs5ef0fy.rdk
 
-#--- remove all rules of a mailbox
-Get-InboxRule -Mailbox MAILBOX | Remove-InboxRule -Force -Confirm:$false
+#-- Check DLs, DLs members and add or delete them
+Get-DistributionGroup -Identity $ADGroup
+Get-DistributionGroupMember -Identity $ADGroup
+Add-DistributionGroupMember -Identity $GP -Member $User
 
-#-- Rules in shared mailboxes, admin must be added ass full access to can create it
-$User = 'USER'
-$MBX = 'SHARED MAILBOX'
-Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
-New-InboxRule "NAME NEW RULE" -Mailbox $MBX -From EMAIL@DOMAIN.COM -subjectContainsWords "SOME SUBJECT WORD"  -MoveToFolder 'EMAIL@DOMAIN.COM:\Inbox\SUBFOLDER\DESTINATION FOLDER' -StopProcessingRules $false
-Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
-Get-InboxRule -Mailbox $MBX
-
+#-- get size of the mailbox
+Get-MailboxStatistics $MBX | ft DisplayName, TotalItemSize, ItemCount
 
 
-#-- Rename AD group
-Set-ADGroup -Identity "AD GROUP NAME" -DisplayName "NEW DISPLAY NAME"
+#-- Get SamAccountName of a list of emails
+Get-Content .\users.txt |
+	ForEach-Object{
+		Get-ADUser -Filter "EmailAddress -eq '$_'" -Properties SAMAccountName
+	} |
+	Select SamAccountName
 
 
-
-#-- Get the emails of the users in a AD Group
-Get-ADGroupMember -Identity "AD GROUP" -Recursive | Get-ADUser -Properties Mail | Select-Object Mail
