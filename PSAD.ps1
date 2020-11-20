@@ -3,10 +3,10 @@
 Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
 
 #Check users of an AD group, sorted and selected by name and SamAccount
-Get-ADGroupMember -Identity ADGROUP | select name,SamAccountname | Format-Table -AutoSize
+Get-ADGroupMember -Identity ADGROUP | Select-Object name,SamAccountname | Format-Table -AutoSize
 
 #check if the user USER is in the ADGroup
-Get-ADGroupMember ADGROUP | Where-Object {$_.name -match "USER*"} |select name,SamAccountname | Format-Table -AutoSize
+Get-ADGroupMember ADGROUP | Where-Object {$_.name -match "USER*"} |Select-Object name,SamAccountname | Format-Table -AutoSize
 
 #add an AD user to an AD group using a wildcard if you are lazy to check the AD
 $ad = Get-ADUser -f {name -like "USER*"}
@@ -15,7 +15,7 @@ Add-ADGroupMember -Identity ADGROUP -Members $ad.SamAccountName
 #add an AD user to an AD group knowing the SamAccountName 
 $ad = Get-ADUser USER
 Add-ADGroupMember -Identity ADGROUP -Members $ad.SamAccountName
-Get-ADGroupMember ADGROUP | Where-Object {$_.SamAccountname -match "USER"} |select name,SamAccountname | Format-Table -AutoSize 
+Get-ADGroupMember ADGROUP | Where-Object {$_.SamAccountname -match "USER"} |Select-Object name,SamAccountname | Format-Table -AutoSize 
 
 #check properties of an AD Group
 Get-ADGroup ADGROUP
@@ -47,7 +47,7 @@ $ad = Get-ADUser -f {name -like "USER*"}
 enable-ADAccount $ad.SamAccountName
 
 #find empty AD groups
-Get-ADGroup -Filter * | where {-not ($_ | Get-ADGroupMember)} | select name
+Get-ADGroup -Filter * | Where-Object {-not ($_ | Get-ADGroupMember)} | Select-Object name
 
 #add a group of users to a DL, first converting email to SAMAccountName and 
 #after then adding it with the variable

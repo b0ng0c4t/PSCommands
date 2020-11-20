@@ -1,5 +1,6 @@
 
 $profile #to know where is the profile
+$profile.AllUsersAllHosts #where is the profile of all users
 
 $MBX = Get-Content .\mailboxes.txt
 $User = Get-Content .\users.txt
@@ -82,7 +83,7 @@ Add-RecipientPermission email1@email.com -AccessRights SendAs -Trustee email1@em
 
 #--- list users in a MBX
 Get-Mailbox $MBX -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Identity,User,AccessRights | Where-Object {($_.user -like '*@*')}
-Get-Mailbox $MBX | Get-MailboxPermission | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | select Identity,User,AccessRights
+Get-Mailbox $MBX | Get-MailboxPermission | Where-Object {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | Select-Object Identity,User,AccessRights
 
 #-- Get the emails of the users in a AD Group
 Get-ADGroupMember -Identity $ADGroup -Recursive | Get-ADUser -Properties Mail |Select-Object Mail,Name
@@ -93,7 +94,7 @@ Get-Mailbox $MBX -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Id
 
 
 #--- Check room permissions for users
-Get-MailBoxFolderPermission -Identity "MAIL@EXAMPLE.COM:\Calendar" | Select FolderName,User,AccessRights | Format-Table -AutoSize
+Get-MailBoxFolderPermission -Identity "MAIL@EXAMPLE.COM:\Calendar" | Select-Object FolderName,User,AccessRights | Format-Table -AutoSize
 
 
 #--- Add user to a calendar with permissions
@@ -101,7 +102,7 @@ Add-MailboxFolderPermission -identity MAIL@EXAMPLE.COM:\calendar -AccessRights E
 
 
 #-- Show the folder tree that have the shared mailboxes
-Get-MailboxFolderStatistics -Identity $MBX -FolderScope Inbox | select Name,FolderPath 
+Get-MailboxFolderStatistics -Identity $MBX -FolderScope Inbox | Select-Object Name,FolderPath 
 
 
 #-- remove inbox rule
@@ -115,7 +116,7 @@ Disable-InboxRule -Identity "RULE NAME" -mailbox shared@domain.com
 #-- Create inbox rules
 Add-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -AutoMapping $True -Confirm:$False
 New-InboxRule "RULE NAME" -Mailbox $MBX -From MAIL@EXAMPLE.COM  -MoveToFolder 'MAIL@EXAMPLE.COM:\Inbox\FOLDER\SUBFOLDER' -StopProcessingRules $false
-New-InboxRule "RULE NAME" -Mailbox $MBX -From email1@email.com -subjectContainsWords "MATCHED WORDS"  -MoveToFolder 'MAIL@EXAMPLE.COM:\Inbox\FOLDER\SUBFOLDER' -StopProcessingRules $false
+New-InboxRule "RULE NAME" -Mailbox $MBX -From $email -subjectContainsWords "MATCHED WORDS"  -MoveToFolder 'MAIL@EXAMPLE.COM:\Inbox\FOLDER\SUBFOLDER' -StopProcessingRules $false
 Remove-MailboxPermission -Identity $MBX -User $User -AccessRights FullAccess -InheritanceType All -confirm:$False
 Get-InboxRule -Mailbox $MBX
 
@@ -125,11 +126,11 @@ Set-MailboxAutoReplyConfiguration -Identity USER@EXAMPLE.COM -AutoReplyState Ena
 
 
 #Check commands available from a module
-get-module -name MODULE -ListAvailable | % {$_.ExportedCommands.Values}
+get-module -name MODULE -ListAvailable | ForEach-Object {$_.ExportedCommands.Values}
 
 Get-InboxRule -mailbox $MBX
-Get-InboxRule -Mailbox $MBX -Identity 1302653358921744385 | fl description
-disable-InboxRule -Mailbox $MBX -Identity 7512399066404225025 | fl description 
+Get-InboxRule -Mailbox $MBX -Identity 1302653358921744385 | Format-List description
+disable-InboxRule -Mailbox $MBX -Identity 7512399066404225025 | Format-List description 
 Remove-InboxRule -Mailbox $MBX -Identity 15527508064574898177
 
 #check licenses
@@ -138,7 +139,7 @@ Get-MsolUser -UserPrincipalName EMAIL | Format-List DisplayName,Licenses
 (Get-MsolUser -UserPrincipalName EMAIL).Licenses.ServiceStatus
 
 #--- Check room permissions for users
-Get-MailBoxFolderPermission -Identity "mail@example.com:\Calendar" | Select FolderName, User, AccessRights | Format-Table -AutoSize
+Get-MailBoxFolderPermission -Identity "mail@example.com:\Calendar" | Select-Object FolderName, User, AccessRights | Format-Table -AutoSize
 
 
 #--- Add user to a calendar with permissions
@@ -153,7 +154,7 @@ Get-DistributionGroupMember -Identity $ADGroup
 Add-DistributionGroupMember -Identity $GP -Member $User
 
 #-- get size of the mailbox
-Get-MailboxStatistics $MBX | ft DisplayName, TotalItemSize, ItemCount
+Get-MailboxStatistics $MBX | format-list DisplayName, TotalItemSize, ItemCount
 
 
 #-- Get SamAccountName of a list of emails
@@ -161,6 +162,6 @@ Get-Content .\users.txt |
 	ForEach-Object{
 		Get-ADUser -Filter "EmailAddress -eq '$_'" -Properties SAMAccountName
 	} |
-	Select SamAccountName
+	Select-Object SamAccountName
 
 
